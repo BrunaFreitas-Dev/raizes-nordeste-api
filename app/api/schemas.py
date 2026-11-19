@@ -26,3 +26,16 @@ class UsuarioResposta(BaseModel):
 class TokenResposta(BaseModel):
     access_token: str
     token_type: str
+
+
+class UnidadeResposta(BaseModel):
+    id_unidade: int
+    nome: str
+    endereco: str
+    cidade: str
+    estado: str
+    telefone: str
+    regiao: str
+    status: str
+
+    model_config = ConfigDict(from_attributes=True)
