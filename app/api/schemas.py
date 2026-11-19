@@ -3,6 +3,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
+from decimal import Decimal
+
 
 class CadastroUsuario(BaseModel):
     nome: str = Field(min_length=2, max_length=100)
@@ -39,3 +41,16 @@ class UnidadeResposta(BaseModel):
     status: str
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ItemCardapioResposta(BaseModel):
+    id_produto: int
+    nome: str
+    descricao: str | None
+    categoria: str | None
+    preco: Decimal
+    disponivel: bool
+
+
+class EntradaEstoque(BaseModel):
+    quantidade: int = Field(gt=0)
