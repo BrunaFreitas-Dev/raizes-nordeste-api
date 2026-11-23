@@ -1,0 +1,772 @@
+{
+  "info": {
+    "_postman_id": "14b10c6e-8ce2-4df1-ba24-bb0dcae3430b",
+    "name": "Raízes do Nordeste API — Testes do MVP",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "42511923"
+  },
+  "item": [
+    {
+      "name": "01 - Login do Cliente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "\r\nconst resposta = pm.response.json();\r\n\r\npm.test(\"Login realizado com sucesso\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Token de acesso recebido\", function () {\r\n    pm.expect(resposta.access_token).to.be.a(\"string\").and.not.empty;\r\n});\r\n\r\nif (resposta.access_token) {\r\n    pm.collectionVariables.set(\"token_cliente\", resposta.access_token);\r\n}\r\n"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token_cliente}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "username",
+              "value": "cliente@raizes.com"
+            },
+            {
+              "key": "password",
+              "value": "Senha@123"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "02 - Consultar Usuário Autenticado",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/auth/me",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "03 - Listar Unidades",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "\r\npm.test(\"Consulta de unidades retorna HTTP 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Retorna uma lista de unidades\", function () {\r\n    pm.expect(pm.response.json()).to.be.an(\"array\");\r\n});\r\n\r\npm.test(\"Existem unidades cadastradas\", function () {\r\n    pm.expect(pm.response.json().length).to.be.above(0);\r\n});\r\n"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/unidades/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "unidades",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "04 - Consultar Cardápio",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "\r\npm.test(\"Consulta do cardápio retorna HTTP 200\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"Resposta do cardápio é JSON válido\", function () {\r\n    pm.response.to.be.json;\r\n});\r\n\r\npm.test(\"Cardápio possui conteúdo\", function () {\r\n    pm.expect(pm.response.text()).to.not.be.empty;\r\n});\r\n"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/unidades/{{id_unidade}}/cardapio",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "unidades",
+            "{{id_unidade}}",
+            "cardapio"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "05 - Criar Pedido Válido",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "\r\npm.test(\"Pedido criado com sucesso\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\nconst resposta = pm.response.json();\r\n\r\npm.test(\"Pedido possui identificador\", function () {\r\n    pm.expect(resposta.id_pedido).to.exist;\r\n});\r\n\r\npm.test(\"Pedido aguarda pagamento\", function () {\r\n    pm.expect(resposta.status_pedido).to.eql(\"AGUARDANDO_PAGAMENTO\");\r\n});\r\n\r\nif (resposta.id_pedido) {\r\n    pm.collectionVariables.set(\"id_pedido\", resposta.id_pedido);\r\n}\r\n"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "postman-pedido-001"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"id_unidade\": 1,\r\n  \"canalPedido\": \"APP\",\r\n  \"itens\": [\r\n    {\r\n      \"id_produto_unidade\": 1,\r\n      \"quantidade\": 1\r\n    }\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/pedidos",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "pedidos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "06 - Pedido sem Estoque",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Pedido sem estoque retorna conflito\", function () {\r\n    pm.response.to.have.status(409);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "postman-sem-estoque-001"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"id_unidade\": 1,\r\n  \"canalPedido\": \"APP\",\r\n  \"itens\": [\r\n    {\r\n      \"id_produto_unidade\": 1,\r\n      \"quantidade\": 99999\r\n    }\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/pedidos",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "pedidos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "07 - Pagamento Aprovado",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Pagamento processado com sucesso\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\nconst resposta = pm.response.json();\r\n\r\npm.test(\"Pedido foi pago\", function () {\r\n    pm.expect(resposta.status_pedido).to.eql(\"PAGO\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "postman-pagamento-aprovado-001"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"forma_pagamento\": \"PIX\",\r\n  \"resultado_simulado\": \"APROVADO\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/pedidos/{{id_pedido}}/pagamento",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "pedidos",
+            "{{id_pedido}}",
+            "pagamento"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "08 - Criar Pedido para Testar Recusa",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Pedido criado para teste de recusa\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\nconst resposta = pm.response.json();\r\n\r\nif (resposta.id_pedido) {\r\n    pm.collectionVariables.set(\"id_pedido_recusa\", resposta.id_pedido);\r\n}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "postman-pedido-recusa-001"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"id_unidade\": 1,\r\n  \"canalPedido\": \"APP\",\r\n  \"itens\": [\r\n    {\r\n      \"id_produto_unidade\": 1,\r\n      \"quantidade\": 1\r\n    }\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/pedidos",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "pedidos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "09 - Pagamento Recusado",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Pagamento recusado foi processado\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\nconst resposta = pm.response.json();\r\n\r\npm.test(\"Pedido ficou com falha no pagamento\", function () {\r\n    pm.expect(resposta.status_pedido).to.eql(\"FALHA_PAGAMENTO\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "postman-pagamento-recusado-001"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"forma_pagamento\": \"PIX\",\r\n  \"resultado_simulado\": \"RECUSADO\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/pedidos/{{id_pedido_recusa}}/pagamento",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "pedidos",
+            "{{id_pedido_recusa}}",
+            "pagamento"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "10 - Reprocessar Pagamento",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Nova tentativa de pagamento processada\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\nconst resposta = pm.response.json();\r\n\r\npm.test(\"Pedido foi pago após nova tentativa\", function () {\r\n    pm.expect(resposta.status_pedido).to.eql(\"PAGO\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "postman-pagamento-retry-001"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"forma_pagamento\": \"PIX\",\r\n  \"resultado_simulado\": \"APROVADO\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/pedidos/{{id_pedido_recusa}}/pagamento",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "pedidos",
+            "{{id_pedido_recusa}}",
+            "pagamento"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "11 - Criar Pedido para Cancelamento",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Pedido criado\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\nconst resposta = pm.response.json();\r\n\r\nif (resposta.id_pedido) {\r\n    pm.collectionVariables.set(\"id_pedido_cancelamento\", resposta.id_pedido);\r\n}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Idempotency-Key",
+            "value": "postman-pedido-cancelamento-001"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"id_unidade\": 1,\r\n  \"canalPedido\": \"APP\",\r\n  \"itens\": [\r\n    {\r\n      \"id_produto_unidade\": 1,\r\n      \"quantidade\": 1\r\n    }\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/pedidos",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "pedidos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "12 - Cancelar Pedido",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Pedido cancelado com sucesso\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\nconst resposta = pm.response.json();\r\n\r\npm.test(\"Status do pedido é CANCELADO\", function () {\r\n    pm.expect(resposta.status_pedido).to.eql(\"CANCELADO\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"motivo\": \"Cancelamento solicitado pelo cliente\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/pedidos/{{id_pedido_cancelamento}}/cancelar",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "pedidos",
+            "{{id_pedido_cancelamento}}",
+            "cancelar"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "13 - Tentar Cancelar Pedido Novamente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Segundo cancelamento é bloqueado\", function () {\r\n    pm.response.to.have.status(409);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"motivo\": \"Tentativa de cancelamento duplicada\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/pedidos/{{id_pedido_cancelamento}}/cancelar",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "pedidos",
+            "{{id_pedido_cancelamento}}",
+            "cancelar"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "14 - Cliente Não Pode Marcar Pedido como Pronto",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Cliente não pode atualizar status\", function () {\r\n    pm.response.to.have.status(403);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"observacao\": \"Teste de acesso indevido\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/pedidos/{{id_pedido_recusa}}/status",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "pedidos",
+            "{{id_pedido_recusa}}",
+            "status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "15 - Login do Atendente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Login do atendente realizado\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\nconst resposta = pm.response.json();\r\n\r\npm.test(\"Token recebido\", function () {\r\n    pm.expect(resposta.access_token).to.exist;\r\n});\r\n\r\npm.collectionVariables.set(\"token_atendente\", resposta.access_token);\r\n\r\nconsole.log(\"Token recebido:\", resposta.access_token);\r\nconsole.log(\"Tamanho do token:\", resposta.access_token?.length);\r\nconsole.log(\"Variável salva:\", pm.collectionVariables.get(\"token_atendente\")?.length);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "username",
+              "value": "atendente@raizes.com"
+            },
+            {
+              "key": "password",
+              "value": "Senha@123"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "16 - Atendente Marca Pedido como Pronto",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Atendente atualizou o pedido\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\nconst resposta = pm.response.json();\r\n\r\npm.test(\"Pedido está pronto para retirada\", function () {\r\n    pm.expect(resposta.status_pedido).to.eql(\"PRONTO_PARA_RETIRADA\");\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"observacao\": \"Pedido pronto para retirada\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/pedidos/{{id_pedido_recusa}}/status",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "pedidos",
+            "{{id_pedido_recusa}}",
+            "status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "17 - Pedido Inexistente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Pedido inexistente retorna 404\", function () {\r\n    pm.response.to.have.status(404);\r\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"observacao\": \"Teste de pedido inexistente\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/pedidos/99999/status",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "pedidos",
+            "99999",
+            "status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "18 - Listar Pedido",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/pedidos?canalPedido=APP&page=1&limit=5",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "pedidos"
+          ],
+          "query": [
+            {
+              "key": "canalPedido",
+              "value": "APP"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "5"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "19 - Consultar Pedido",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": ""
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token_cliente}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": ""
+    },
+    {
+      "key": "token_cliente",
+      "secret": true
+    },
+    {
+      "key": "token_atendente",
+      "secret": true
+    },
+    {
+      "key": "id_unidade",
+      "value": ""
+    },
+    {
+      "key": "id_produto_unidade",
+      "value": ""
+    },
+    {
+      "key": "id_pedido",
+      "value": ""
+    },
+    {
+      "key": "id_pedido_recusa",
+      "value": ""
+    },
+    {
+      "key": "id_pedido_cancelamento",
+      "value": ""
+    },
+    {
+      "key": "json_web_token_1apx",
+      "secret": true
+    }
+  ]
+}
