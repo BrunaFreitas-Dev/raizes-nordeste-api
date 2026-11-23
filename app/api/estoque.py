@@ -1,8 +1,9 @@
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.infrastructure.database import get_db
-from app.infrastructure.models import Estoque
+from app.infrastructure.models import Estoque, MovimentacaoEstoque, Usuario
 from app.api.schemas import EntradaEstoque
 from app.api.dependencias import exigir_perfil
 
@@ -17,14 +18,15 @@ def registrar_entrada_estoque(
     id_produto_unidade: int,
     dados: EntradaEstoque,
     db: Session = Depends(get_db),
-    usuario=Depends(exigir_perfil("GERENTE", "ADMINISTRADOR")),
+    usuario: Usuario = Depends(
+        exigir_perfil("GERENTE", "ADMINISTRADOR")
+    ),
 ):
     estoque = (
         db.query(Estoque)
         .filter(
             Estoque.id_produto_unidade == id_produto_unidade
         )
-        .with_for_update()
         .first()
     )
 
@@ -36,15 +38,31 @@ def registrar_entrada_estoque(
 
     estoque.quantidade_total += dados.quantidade
 
+    movimentacao = MovimentacaoEstoque(
+        id_estoque=estoque.id_estoque,
+        id_usuario=usuario.id_usuario,
+        id_pedido=None,
+        tipo_movimentacao="ENTRADA",
+        quantidade=dados.quantidade,
+        observacao=dados.observacao,
+    )
+
     try:
+        db.add(movimentacao)
+        db.flush()
+
+        id_movimentacao = movimentacao.id_movimentacao
+
         db.commit()
         db.refresh(estoque)
+
     except Exception:
         db.rollback()
         raise
 
     return {
         "mensagem": "Entrada de estoque registrada com sucesso",
+        "id_movimentacao": id_movimentacao,
         "id_estoque": estoque.id_estoque,
         "quantidade_total": estoque.quantidade_total,
         "quantidade_reservada": estoque.quantidade_reservada,

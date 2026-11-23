@@ -167,21 +167,31 @@ def executar_seed():
                 "nome": "Administrador Teste",
                 "email": "admin@raizes.com",
                 "perfil": "ADMINISTRADOR",
+                "usuario_tecnico": False,
             },
             {
                 "nome": "Gerente Teste",
                 "email": "gerente@raizes.com",
                 "perfil": "GERENTE",
+                "usuario_tecnico": False,
             },
             {
                 "nome": "Atendente Teste",
                 "email": "atendente@raizes.com",
                 "perfil": "ATENDENTE",
+                "usuario_tecnico": False,
             },
             {
                 "nome": "Cliente Teste",
                 "email": "cliente@raizes.com",
                 "perfil": "CLIENTE",
+                "usuario_tecnico": False,
+            },
+            {
+                "nome": "Usuário Técnico Teste",
+                "email": "totem@raizes.com",
+                "perfil": "ATENDENTE",
+                "usuario_tecnico": True,
             },
         ]
 
@@ -200,17 +210,31 @@ def executar_seed():
                     email=dados["email"],
                     senha_hash=gerar_hash_senha("Senha@123"),
                     perfil=dados["perfil"],
+                    usuario_tecnico=dados["usuario_tecnico"],
                     ativo=True,
                 )
                 db.add(usuario)
                 db.flush()
+            else:
+                # Atualiza a identificação técnica se o usuário já existir
+                usuario.usuario_tecnico = dados["usuario_tecnico"]
 
-            usuarios[dados["perfil"]] = usuario
+            chave = (
+                "TECNICO"
+                if dados["usuario_tecnico"]
+                else dados["perfil"]
+            )
+            usuarios[chave] = usuario
 
         # 6. Vincular usuários à unidade Recife
         unidade_recife = unidades["Unidade Recife"]
 
-        for perfil in ("ADMINISTRADOR", "GERENTE", "ATENDENTE"):
+        for perfil in (
+            "ADMINISTRADOR",
+            "GERENTE",
+            "ATENDENTE",
+            "TECNICO",
+        ):
             usuario = usuarios[perfil]
 
             vinculo = db.scalar(
@@ -229,12 +253,13 @@ def executar_seed():
                     )
                 )
 
+
         # Finalizar transação
         db.commit()
 
         print("Seed executado com sucesso!")
         print("2 unidades, 5 produtos, 10 vínculos e 10 estoques.")
-        print("4 usuários cadastrados.")
+        print("5 usuários cadastrados, incluindo 1 usuário técnico.")
 
     except Exception:
         db.rollback()

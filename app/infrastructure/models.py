@@ -158,12 +158,6 @@ class Usuario(Base):
     usuario_tecnico: Mapped[bool] = mapped_column(
     Boolean,
     default=False,
-    nullable=False
-    )
-
-    usuario_tecnico: Mapped[bool] = mapped_column(
-    Boolean,
-    default=False,
     server_default="0",
     nullable=False
     )

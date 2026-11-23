@@ -13,7 +13,6 @@ def autenticar_usuario(db: Session, email: str, senha: str) -> dict:
         select(Usuario).where(Usuario.email == email)
     )
 
-    # A mesma mensagem evita revelar se o e-mail existe
     if (
         usuario is None
         or not usuario.ativo
