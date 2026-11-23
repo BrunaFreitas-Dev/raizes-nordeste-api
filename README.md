@@ -1,8 +1,8 @@
-Raízes do Nordeste — API Back-end
+# Raízes do Nordeste — API Back-end
 
 API REST desenvolvida em Python com FastAPI para gerenciamento de unidades, produtos, estoque, pedidos e pagamentos simulados da rede Raízes do Nordeste.
 
-1. Tecnologias utilizadas
+## 1. Tecnologias utilizadas
 
 - Python
 - FastAPI
@@ -17,20 +17,20 @@ API REST desenvolvida em Python com FastAPI para gerenciamento de unidades, prod
 
 As dependências e versões estão especificadas em `requirements.txt`.
 
- 2. Requisitos
+## 2. Requisitos
 
 - Python instalado.
 - Git instalado.
 - Terminal PowerShell ou equivalente.
 
-3. Clonar o repositório
+## 3. Clonar o repositório
 
 ```bash
 git clone https://github.com/BrunaFreitas-Dev/raizes-nordeste-api.git
 cd raizes-nordeste-api
 ```
 
- 4. Criar e ativar o ambiente virtual
+## 4. Criar e ativar o ambiente virtual
 
 No Windows (PowerShell):
 
@@ -39,14 +39,14 @@ python -m venv .venv
 .venv\Scripts\Activate.ps1
 ```
 
-5. Instalar as dependências
+## 5. Instalar as dependências
 
 ```powershell
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-6. Configurar as variáveis de ambiente
+## 6. Configurar as variáveis de ambiente
 
 Crie uma cópia do arquivo `.env.example` com o nome `.env`.
 
@@ -76,7 +76,7 @@ Descrição:
 
 A chave secreta deve ser substituída por um valor seguro. Não compartilhe o arquivo `.env`.
 
- 7. Criar e atualizar o banco de dados
+## 7. Criar e atualizar o banco de dados
 
 Execute as migrações:
 
@@ -84,7 +84,7 @@ Execute as migrações:
 python -m alembic upgrade head
 ```
 
-8. Popular o banco com dados iniciais
+## 8. Popular o banco com dados iniciais
 
 Execute:
 
@@ -96,7 +96,7 @@ O seed cadastra os dados iniciais, incluindo unidades, produtos, vínculos entre
 
 O seed verifica registros existentes antes de inserir novos dados.
 
-Usuários de teste
+### Usuários de teste
 
 A senha inicial dos usuários criados pelo seed é:
 
@@ -112,7 +112,7 @@ A senha inicial dos usuários criados pelo seed é:
 
 Os usuários são destinados aos testes dos diferentes perfis e permissões da API.
 
-9. Executar a aplicação
+## 9. Executar a aplicação
 
 Inicie o servidor:
 
@@ -128,7 +128,7 @@ A API ficará disponível em:
 
 O endpoint raiz pode ser acessado em `GET /`.
 
-10. Principais grupos de endpoints
+## 10. Principais grupos de endpoints
 
 | Grupo | Prefixo | Funcionalidade |
 |---|---|---|
@@ -139,7 +139,7 @@ O endpoint raiz pode ser acessado em `GET /`.
 
 A documentação interativa do Swagger apresenta os métodos, parâmetros, schemas e respostas disponíveis.
 
-11. Autenticação
+## 11. Autenticação
 
 A autenticação utiliza JWT (JSON Web Token).
 
@@ -154,13 +154,13 @@ No Swagger, clique em **Authorize** e informe as credenciais conforme o mecanism
 
 Os endpoints protegidos exigem autenticação e respeitam as permissões de cada perfil.
 
-12. Pagamentos
+## 12. Pagamentos
 
 O projeto utiliza pagamento simulado (`MOCK`), sem integração com instituições financeiras ou processamento de transações reais.
 
 O fluxo permite simular resultados de pagamento aprovado ou recusado, além de registrar tentativas e atualizar o status do pedido conforme as regras implementadas.
 
-13. Executar os testes automatizados
+## 13. Executar os testes automatizados
 
 Com o ambiente virtual ativado, execute:
 
@@ -181,7 +181,61 @@ Os testes automatizados verificam funcionalidades como:
 - Atualização de status.
 - Regras de acesso e validações.
 
-14. Estrutura do projeto
+## 14. Testes de integração com Postman
+
+O projeto disponibiliza uma coleção do Postman para testar os endpoints e os principais fluxos da API.
+
+### Arquivo da coleção
+
+O arquivo exportado está disponível no repositório:
+
+```text
+postman/
+└── Raízes do Nordeste API — Testes do MVP.postman_collection.json
+```
+
+### Importar a coleção
+
+1. Abra o Postman.
+2. Clique em **Import**.
+3. Selecione **Files**.
+4. Escolha o arquivo JSON localizado na pasta `postman/` do projeto.
+5. Confirme a importação.
+
+Não é necessário importar um Environment separado: a coleção utiliza variáveis próprias.
+
+### Configurar a URL da API
+
+Na coleção importada, abra a aba **Variables** e confira a variável `base_url`.
+
+Para execução local, utilize:
+
+```text
+http://127.0.0.1:8000
+```
+
+Mantenha a aplicação em execução durante os testes.
+
+### Executar os cenários
+
+Execute as requisições na ordem apresentada na coleção, respeitando as dependências entre elas.
+
+A coleção contém cenários relacionados a:
+
+- Login do cliente e consulta do usuário autenticado.
+- Listagem de unidades e consulta do cardápio.
+- Criação de pedido válido e validação de estoque insuficiente.
+- Pagamento aprovado e recusado.
+- Reprocessamento de pagamento.
+- Cancelamento de pedido e tentativa de cancelamento repetido.
+- Validação de permissões de cliente e atendente.
+- Consulta de pedidos e tratamento de pedido inexistente.
+
+Os scripts de teste utilizam variáveis da coleção para armazenar automaticamente tokens de autenticação e identificadores de pedidos, permitindo reutilizar esses valores nas requisições seguintes.
+
+A execução dos cenários depende da disponibilidade do banco de dados, dos dados iniciais e da API em funcionamento.
+
+## 15. Estrutura do projeto
 
 ```text
 raizes-nordeste-api/
@@ -194,6 +248,8 @@ raizes-nordeste-api/
 │   ├── application/
 │   ├── domain/
 │   └── infrastructure/
+│
+├── postman/
 │
 ├── tests/
 │
@@ -212,13 +268,13 @@ A aplicação está organizada em camadas:
 - **Domain:** enums e conceitos do domínio.
 - **Infrastructure:** banco de dados, modelos, autenticação e seed.
 
-15. Repositório
+## 16. Repositório
 
 GitHub:
 
 https://github.com/BrunaFreitas-Dev/raizes-nordeste-api
 
-16. Observações
+## 17. Observações
 
 - O banco SQLite é criado localmente conforme a configuração de conexão.
 - O arquivo `.env` não deve ser enviado ao repositório.
